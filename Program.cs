@@ -1,4 +1,6 @@
 using IdentityManager.Data;
+using IdentityManager.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,10 @@ builder.Services.AddControllersWithViews();
 //Config Dbcontext class
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//Add Identity service to this project
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 var app = builder.Build();
 
@@ -25,6 +31,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+//Add Authentication
+app.UseAuthorization();
 app.UseAuthorization();
 
 app.MapControllerRoute(
