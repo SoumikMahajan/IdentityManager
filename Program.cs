@@ -1,5 +1,6 @@
 using IdentityManager.Data;
 using IdentityManager.Models;
+using IdentityManager.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,20 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 
 //Add Identity service to this project
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddScoped<EmailService>();
+
+//change the default password requirment on register page
+builder.Services.Configure<IdentityOptions>(opt =>
+{
+    opt.Password.RequireDigit = false;
+    opt.Password.RequireLowercase = false;
+    opt.Password.RequireNonAlphanumeric = false;
+    opt.Lockout.MaxFailedAccessAttempts = 3;
+    opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(10000);
+    opt.SignIn.RequireConfirmedEmail = false;
+});
 
 var app = builder.Build();
 
