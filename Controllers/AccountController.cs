@@ -4,29 +4,53 @@ using IdentityManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
 
 namespace IdentityManager.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly EmailService _emailService;
         private readonly UrlEncoder _urlEncoder;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, EmailService emailService, UrlEncoder urlEncoder)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, EmailService emailService, UrlEncoder urlEncoder, RoleManager<IdentityRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
             _urlEncoder = urlEncoder;
+            _roleManager = roleManager;
         }
 
-        public IActionResult Register(string returnurl = null)
+        [AllowAnonymous]
+        public async Task<IActionResult> Register(string returnurl = null)
         {
+            //if roles does not exists in DB then create the role
+            if (!_roleManager.RoleExistsAsync(SD.Admin).GetAwaiter().GetResult())
+            {
+                await _roleManager.CreateAsync(new IdentityRole(SD.Admin));
+                await _roleManager.CreateAsync(new IdentityRole(SD.User));
+            }
+
             ViewData["ReturnUrl"] = returnurl;
-            RegisterViewModel registerViewModel = new RegisterViewModel();
+
+            //Getting the Role list dynamically
+            RegisterViewModel registerViewModel = new()
+            {
+                //Select(x => x.Name) means Select Name column from Table, this method is call linq projection
+                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
+                {
+                    Text = i,
+                    Value = i
+                })
+            };
+
+            //RegisterViewModel registerViewModel = new RegisterViewModel();
             return View(registerViewModel);
         }
 
@@ -49,6 +73,18 @@ namespace IdentityManager.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password); //create new user
                 if (result.Succeeded)
                 {
+                    //set the user role
+                    if (model.RoleSelected != null)
+                    {
+                        await _userManager.AddToRoleAsync(user, model.RoleSelected);
+                    }
+                    else
+                    {
+                        await _userManager.AddToRoleAsync(user, SD.User);
+                    }
+
+
+
                     //after registation send a email confirmation to user
 
                     //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -67,6 +103,12 @@ namespace IdentityManager.Controllers
                 AddErrors(result);
             }
 
+            //if any error occurs on post we need to bind the role list again
+            model.RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
+            {
+                Text = i,
+                Value = i
+            });
             return View(model);
         }
 
@@ -113,12 +155,14 @@ namespace IdentityManager.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -150,6 +194,15 @@ namespace IdentityManager.Controllers
 
             return View(model);
         }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult NoAccess()
+        {
+            return View();
+        }
+
 
         [HttpGet]
         [AllowAnonymous]

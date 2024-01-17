@@ -19,6 +19,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 builder.Services.AddScoped<EmailService>();
 
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+    opt.AccessDeniedPath = new PathString("/Account/NoAccess");
+});
+
 //change the default password requirment on register page
 builder.Services.Configure<IdentityOptions>(opt =>
 {
