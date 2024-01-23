@@ -66,6 +66,21 @@ builder.Services.AddAuthorization(opt =>
     opt.AddPolicy("FirstNameAuth", p => p.Requirements.Add(new FirstNameAuthRequirement("test")));
 });
 
+//Microsoft login
+//6H~8Q~g__z7L6qKX4LgmIM0vTADpAGjguBl4Sa2m
+//c99a1b88-78cb-4ebd-8af8-bfffe332c1ab
+//5e671212-a215-4ba5-a744-acc1d4fef1a9
+builder.Services.AddAuthentication().AddMicrosoftAccount(opt =>
+{
+    opt.ClientId = "5e671212-a215-4ba5-a744-acc1d4fef1a9";
+    opt.ClientSecret = "6H~8Q~g__z7L6qKX4LgmIM0vTADpAGjguBl4Sa2m";
+});
+builder.Services.AddAuthentication().AddFacebook(opt =>
+{
+    opt.ClientId = "1095266281920012";
+    opt.ClientSecret = "4a24fa632188baf5bc9a31617b87ee58";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
