@@ -23,9 +23,9 @@
                     <th>
                         Roles
                     </th>
-                    @* <th>
+                    <th>
                         Claims
-                    </th> *@
+                    </th>
                     <th></th>
                 </tr>
                 @foreach(var item in Model)
@@ -40,9 +40,9 @@
                         <td>
                             @item.Role
                         </td>
-                       @*  <td>
+                        <td>
                             @item.UserClaim
-                        </td> *@
+                        </td>
                         <td style="width:450px;">
                             <div class="row">
                                 <div class="col-3">
@@ -50,11 +50,11 @@
                                         Roles
                                     </a>
                                 </div>
-                                @* <div class="col-3">
+                                <div class="col-3">
                                     <a asp-action="ManageUserClaim" asp-route-userId="@item.Id" class="btn btn-info w-100" style="cursor:pointer">
                                         Claims
                                     </a>
-                                </div>*@
+                                </div>
                                 <div class="col-3">
                                     @if(item.LockoutEnd==null || item.LockoutEnd < DateTime.Now)
                                     {
